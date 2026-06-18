@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NCS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/4f8a0d8f3f.js" crossorigin="anonymous"></script>
+  <meta name="google-site-verification" content="ixEKJ1N-z-OELgU-iIzyUzmOLL8nHBclFV2xJAnrgHw" />
+  <style>
+    :root {
+      --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg: #f0f2f5;
+      --text: #333;
+      --accent: #667eea;
+      --highlight: #ffd600;
+      --progress: #764ba2;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.3);
+      --menu-bg: rgba(102, 126, 234, 0.9);
+    }
+    .dark {
+      --bg: #0f172a;
+      --text: #f7f9fc;
+      --accent: #818cf8;
+      --highlight: #ffd600;
+      --progress: #818cf8;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --menu-bg: rgba(15, 23, 42, 0.9);
+    }
+    * { 
+      margin: 0; padding: 0; box-sizing: border-box; 
+      font-family: 'Poppins', sans-serif; 
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    html, body { background: var(--bg); color: var(--text); line-height: 1.6; scroll-behavior: smooth; overflow-x: hidden; }
+
+    /* Loader */
+    #loader {
+      position: fixed; inset: 0;
+      display: flex; justify-content: center; align-items: center;
+      background: #fff; z-index: 2000;
+    }
+    #loader div {
+      width: 50px; height: 50px; border: 6px solid #ccc;
+      border-top: 6px solid var(--accent);
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg);} }
+
+    /* Scroll progress */
+    #progress {
+      position: fixed; top: 0; left: 0; height: 5px;
+      background: var(--progress); width: 0%;
+      z-index: 1500; transition: width 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Header & Nav */
+    header {
+      background: var(--menu-bg); color: white; padding: 0.8rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      animation: fadeInDown 0.8s ease-out;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    header h1 { font-size: 1.7rem; letter-spacing: 2px; }
+    nav { background: var(--menu-bg); border-radius: 20px; }
+    nav ul { display: flex; flex-wrap: wrap; list-style: none; padding: 0.5rem 0; }
+    nav ul li { margin: 0 0.5rem; }
+    nav ul li a {
+      color: white; text-decoration: none; font-weight: 500; transition: all 0.3s ease;
+      padding: 0.5rem 1rem; border-radius: 20px;
+      display: inline-block; animation: fadeInMenu 0.8s;
+    }
+    @keyframes fadeInMenu {
+      from { opacity: 0; transform: translateY(-10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    nav ul li a.active { color: var(--highlight); background: rgba(255,255,255,0.08);}
+    nav ul li a:hover { color: var(--highlight); background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+    .menu-toggle { display: none; font-size: 2rem; color: white; cursor: pointer; margin-left: 1rem; }
+    
+    /* Dropdown Menu */
+    .dropdown { position: relative; }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: var(--menu-bg);
+      min-width: 450px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      backdrop-filter: blur(20px);
+      z-index: 1001;
+      border-radius: 15px;
+      padding: 10px;
+      list-style: none;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+      border: 1px solid var(--glass-border);
+    }
+    .dropdown:hover .dropdown-content { display: grid; animation: fadeInMenu 0.3s ease; }
+    .dropdown-content li { margin: 0; width: 100%; }
+    .dropdown-content li a { display: block; padding: 0.7rem 1rem; border-radius: 8px; width: 100%; font-size: 0.9rem; }
+    .dropdown-content li a:hover { background: rgba(255,255,255,0.15); color: var(--highlight); transform: translateX(5px); }
+
+    #searchBar { 
+      padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--glass-border); 
+      outline: none; margin-right: 1rem; background: rgba(255,255,255,0.1); color: white;
+      transition: all 0.3s;
+    }
+    #searchBar::placeholder { color: rgba(255,255,255,0.7); }
+    #searchBar:focus { background: rgba(255,255,255,0.2); width: 250px; }
+
+    /* Mobile menu */
+    @media(max-width: 900px) {
+      nav ul { flex-direction: column; display: none; width: 100vw; background: var(--menu-bg); position: absolute; left: 0; top: 60px; border-radius: 0 0 20px 20px; }
+      nav.active ul { display: flex; }
+      .menu-toggle { display: block; }
+      header { flex-direction: column; align-items: flex-start; }
+      #searchBar { margin: 1rem 0 0 0; width: 90vw; }
+      .dropdown-content { position: static; box-shadow: none; display: block; padding-left: 1rem; background: rgba(0,0,0,0.1); min-width: auto; }
+      .dropdown:hover .dropdown-content { display: block; }
+    }
+
+    /* Hero + Parallax */
+    .hero {
+      background: linear-gradient(-45deg, #667eea, #764ba2, #4facfe, #00f2fe);
+      background-size: 400% 400%; animation: gradient 15s ease infinite;
+      color: white; text-align: center; padding: 6rem 2rem;
+      background-attachment: fixed;
+      animation: fadeInUp 1.2s;
+    }
+    @keyframes gradient { 0% {background-position:0% 50%;} 50% {background-position:100% 50%;} 100% {background-position:0% 50%;} }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .hero h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+    .hero .hero-btn {
+      padding: 0.8rem 1.5rem; border: none; border-radius: 30px;
+      background: white; color: #667eea; font-weight: 600;
+      cursor: pointer; transition: 0.4s; font-size: 1.1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      animation: pulseBtn 2s infinite;
+    }
+    @keyframes pulseBtn {
+      0% { transform: scale(1);}
+      50% { transform: scale(1.08);}
+      100% { transform: scale(1);}
+    }
+    .hero .hero-btn:hover { transform: scale(1.1) rotate(-2deg); background: #f2f2f2; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+    /* Sections & Cards */
+    section { padding: 3rem 2rem; max-width: 1100px; margin: auto; }
+    section h3 { text-align: center; font-size: 2rem; margin-bottom: 2rem; color: var(--accent); animation: fadeInUp 1s;}
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .card {
+      background: var(--card-bg); padding: 2rem; border-radius: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.05); text-align: center; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: fadeInCard 1s;
+    }
+    @keyframes fadeInCard {
+      from { opacity: 0; transform: scale(0.95);}
+      to { opacity: 1; transform: scale(1);}
+    }
+    .card:hover { transform: translateY(-12px); box-shadow: 0 15px 45px rgba(0,0,0,0.1); border-color: var(--accent); }
+    .card i { font-size: 2rem; color: var(--accent); margin-bottom: 1rem; transition: color 0.3s;}
+    .card:hover i { color: var(--highlight); }
+
+    .section-btn {
+      display: block; margin: 2rem auto 0; padding: 0.8rem 1.5rem;
+      border: none; border-radius: 30px; background: var(--accent);
+      color: white; font-weight: 600; text-decoration: none;
+      text-align: center; transition: transform 0.3s, background 0.3s;
+      width: fit-content; font-size: 1.1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      animation: pulseBtn 2s infinite;
+    }
+    .section-btn:hover { transform: scale(1.1) rotate(2deg); background: var(--highlight); color: #333; box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
+
+    .section-btn.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+      filter: grayscale(1);
+      cursor: not-allowed;
+    }
+
+    /* FAQ */
+    .faq-item { background: var(--card-bg); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; cursor: pointer; position: relative; transition: transform 0.3s; animation: fadeInCard 1s;}
+    .faq-item:hover { transform: scale(1.02); }
+    .faq-item h4 { margin: 0; }
+    .faq-item p { display: none; margin-top: 0.5rem; }
+    .faq-item .tooltip { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; }
+    .tooltip-text { display: none; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 2px 6px; border-radius: 5px; font-size: 0.8rem; white-space: nowrap; z-index: 500; }
+    .faq-item:hover .tooltip-text { display: block; }
+
+    /* Footer */
+    footer { background: var(--menu-bg); color: white; text-align: center; padding: 2rem; margin-top: 3rem; backdrop-filter: blur(10px); border-top: 1px solid var(--glass-border); }
+    .footer-socials {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      animation: fadeInUp 1s;
+    }
+    .footer-socials a {
+      color: white;
+      font-size: 1.5rem;
+      transition: color 0.3s, transform 0.3s;
+    }
+    .footer-socials a:hover {
+      color: var(--highlight);
+      transform: scale(1.2);
+    }
+
+    /* Scroll-to-top */
+    #toTop {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--accent); color: white; border: none; border-radius: 50%;
+      padding: 0.8rem; font-size: 1.5rem; cursor: pointer;
+      display: none; z-index: 1200; opacity: 0.7; transition: opacity 0.3s, transform 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      animation: fadeInUp 1s;
+    }
+    #toTop:hover {
+      opacity: 1; transform: scale(1.15);
+    }
+
+    /* Floating socials */
+    .socials {
+      position: fixed; top: 50%; left: 10px;
+      display: flex; flex-direction: column; gap: 10px;
+      z-index: 1200;
+      animation: fadeInLeft 0.8s ease-out;
+    }
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-30px);}
+      to { opacity: 1; transform: translateX(0);}
+    }
+    .socials a {
+      background: var(--accent); color: white; width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; text-decoration: none;
+      transition: 0.3s;
+      font-size: 1.5rem;
+    }
+    .socials a:hover { transform: scale(1.2); background: var(--highlight); color: #333; }
+
+    /* NAIM: bewegend turquoise-groen + paars kleurverloop */
+    #naim {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      background: linear-gradient(120deg, #22d3a8 0%, #7b61ff 100%);
+      background-size: 300% 300%;
+      animation: naimGradient 9s ease-in-out infinite;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(88, 24, 224, 0.15);
+      margin: 2rem auto;
+    }
+
+    @keyframes naimGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #naim h3 { color: #fff; text-shadow: 0 4px 18px rgba(0,0,0,0.25); }
+    #naim .card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(15px);
+      color: #fff;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: transform 0.35s, box-shadow 0.35s;
+    }
+    #naim .card i { color: rgba(255,255,255,0.95); filter: drop-shadow(0 4px 14px rgba(0,0,0,0.35)); }
+    #naim .card:hover { transform: translateY(-10px) scale(1.03); box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
+
+    #naim .section-btn {
+      background: rgba(255,255,255,0.95);
+      color: #2d2d2d;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    #naim .section-btn:hover { transform: scale(1.05); }
+
+    @media(max-width: 768px) {
+      nav ul { flex-direction: column; display: none; width: 100vw; }
+      nav.active ul { display: flex; }
+      .menu-toggle { display: block; }
+      header { flex-direction: column; align-items: flex-start; }
+      #searchBar { margin: 1rem 0 0 0; width: 90vw; }
+      section { padding: 2rem 0.5rem; }
+      .cards { grid-template-columns: 1fr; }
+      .socials { left: auto; right: 10px; top: auto; bottom: 80px; flex-direction: row; }
+    }
+    @keyframes naimMove {
+      0% { right: 20px; }
+      100% { right: calc(100% - 270px); } /* Move across the screen, considering bubble width */
+    }
+
+    /* Naim Bot Styling */
+    #naim-bot {
+      position: fixed;
+      bottom: 85px;
+      right: 20px;
+      z-index: 1500;
+      display: flex; /* Changed to flex for better alignment */
+      align-items: flex-end;
+      gap: 10px;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.4s ease; /* Smooth fade in/out */
+      transform: translateY(20px);
+    }
+    #naim-bot.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    #naim-bot.moving {
+      animation: naimMove 20s linear infinite alternate; /* Move left and right */
+    }
+    #naim-bot.speaking {
+      animation-play-state: paused; /* Pause movement when speaking */
+    }
+    .naim-avatar {
+      width: 50px; height: 50px;
+      background: var(--accent); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      font-weight: 600; font-size: 1.8rem; border: 2px solid white; /* Larger font for emoji */
+    }
+    .naim-bubble {
+      background: white; color: #333; padding: 12px 18px;
+      border-radius: 20px 20px 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 220px; font-size: 0.85rem; line-height: 1.4;
+    }
+    .dark .naim-bubble { background: #1e293b; color: white; }
+  </style>
+</head>
+<body>
+
+<div id="loader"><div></div></div>
+<div id="progress"></div>
+
+<header>
+  <h1>NCS</h1>
+  <input type="text" id="searchBar" placeholder="Zoeken...">
+  <div class="menu-toggle"><i class="fas fa-bars"></i></div>
+  <nav>
+    <ul></ul>
+  </nav>
+  <button id="darkToggle" style="margin-left:1rem; padding:0.4rem 0.8rem; border:none; border-radius:20px; background:yellow; font-weight:600;">🌙</button>
+</header>
+
+<section class="hero">
+  <h2>Welkom bij NCS</h2>
+  <p>Ontdek leren, muziek en media — alles op één plek!</p>
+  <button class="hero-btn" onclick="document.querySelector('#learn').scrollIntoView({behavior:'smooth'})">Start nu 🚀</button>
+</section>
+
+<div id="sections-container"></div>
+
+<section id="faq">
+  <h3>Veelgestelde vragen</h3>
+  <div class="faq-item">
+    <h4>Is NCS gratis?</h4>
+    <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltip-text">Ja! Alles is gratis te gebruiken.</span></span>
+    <p>Ja! Alles is gratis te gebruiken.</p>
+  </div>
+  <div class="faq-item">
+    <h4>Kan ik mijn eigen content toevoegen?</h4>
+    <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltip-text">Nog niet, maar misschien in de toekomst.</span></span>
+    <p>Op dit moment nog niet, maar dit komt misschien in de toekomst!</p>
+  </div>
+</section>
+
+<section id="over">
+  <h3>Over NCS</h3>
+  <p style="text-align:center; max-width:700px; margin:auto;">
+NCS is een moderne en centrale website, speciaal ontwikkeld door Naim Yavuz.
+Op NCS vind je alles wat je nodig hebt om te leren, te ontdekken en plezier te maken.
+Je vindt hier educatieve artikelen, programmeercursussen, video's, foto's, leuke games en een actieve chat-community.
+Of je nu wilt studeren, creatief bezig wilt zijn, samen wilt spelen of gewoon nieuwe mensen wilt ontmoeten: bij NCS kan het allemaal!
+Iedereen kan gratis gebruik maken van alle onderdelen van de site.
+NCS is bedoeld om kennis, creativiteit en plezier samen te brengen op één plek, zodat iedereen zich kan ontwikkelen en vermaken.
+Word onderdeel van onze community en ontdek wat NCS voor jou te bieden heeft!
+  </p>
+</section>
+
+<footer>
+  <p>&copy; 2025 NCS | Gemaakt door Naim Yavuz</p>
+  <div class="footer-socials">
+    <a href="mailto:cankayanaim66@gmail.com" title="Mail"><i class="fas fa-envelope"></i></a>
+    <a href="https://www.youtube.com/@spelennaim" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+  </div>
+</footer>
+
+<button id="toTop" style="display:none; border-radius:50%; transition:opacity 0.3s;">
+  <i class="fas fa-arrow-up"></i> ⬆️
+</button>
+
+<div class="socials">
+  <a href="https://www.youtube.com/@spelennaim" target="_blank" title="YouTube">
+    <i class="fab fa-youtube"></i> ▶️
+  </a>
+  <a href="mailto:cankayanaim66@gmail.com" title="Mail">
+    <i class="fas fa-envelope"></i> 📧
+  </a>
+</div>
+
+<div id="naim-bot">
+  <div class="naim-bubble" id="naim-bubble"></div>
+  <div class="naim-avatar">🤖</div>
+</div>
+
+<script>
+  // JSON data voor alle secties
+  const sectionsData = [
+    {
+      id: "learn",
+      title: "Code editor",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-graduation-cap", title: "code", description: "html code editor" },
+        { icon: "fas fa-book", title: "live preview", description: "..." }
+      ],
+      buttonText: "Ga naar SN Learn",
+      buttonUrl: "https://naim-cloud-software.netlify.app/7/index.html"
+    },
+    {
+      id: "lesrooster",
+      title: "Lesrooster",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-calendar-alt", title: "Mijn Rooster", description: "Bekijk je persoonlijke lesrooster en wijzigingen." },
+        { icon: "fas fa-clock", title: "Lokaalzoeker", description: "Vind altijd snel het juiste lokaal voor je volgende les." }
+      ],
+      buttonText: "Ga naar Lesrooster",
+      buttonUrl: "https://lesrooster-ncs.web.app/"
+    },
+    {
+      id: "cloud",
+      title: "NCS Cloud",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-cloud", title: "Opslag", description: "Sla al je bestanden veilig op in de NCS Cloud." },
+        { icon: "fas fa-share-alt", title: "Delen", description: "Deel mappen en werk samen aan projecten met anderen." }
+      ],
+      buttonText: "Ga naar NCS Cloud",
+      buttonUrl: "https://cloud-ncs.web.app/"
+    },
+    {
+      id: "media",
+      title: "SN Media",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-film", title: "Video's", description: "Bekijk onze nieuwste video's en korte films." },
+        { icon: "fas fa-camera", title: "Foto's", description: "Blader door een verzameling unieke foto's en kunstwerken." }
+      ],
+      buttonText: "Ga naar SN Media",
+      buttonUrl: "https://sn2023.wixsite.com/sn-media"
+    },
+    {
+      id: "gaming",
+      title: "SN Gaming",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-gamepad", title: "Gaming", description: "Ontdek leuke games en speel direct via spelennaim!" },
+        { icon: "fas fa-trophy", title: "Challenges", description: "Doe mee aan gaming challenges en win prijzen." }
+      ],
+      buttonText: "Ga naar SN Gaming",
+      buttonUrl: "https://sn2023.wixsite.com/spelennaim"
+    },
+    {
+      id: "chatconnect",
+      title: "ChatConnect",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-comments", title: "Chat & Community", description: "Praat mee, deel ideeën en maak nieuwe vrienden via ChatConnect!" },
+        { icon: "fas fa-database", title: "DataHub", description: "Ontdek en deel data, alles veilig en snel in de NCS DataHub." }
+      ],
+      buttonText: "Ga naar ChatConnect",
+      buttonUrl: "https://ncs-datahub.web.app"
+    },
+    {
+      id: "naim",
+      title: "NAIM (In update)",
+      type: "special",
+      disabled: true,
+      cards: [
+        { icon: "fas fa-tools", title: "Onderhoud", description: "Deze service is momenteel niet beschikbaar." },
+        { icon: "fas fa-clock", title: "Status", description: "Komt later weer online, de site is nu in de updating." }
+      ],
+      buttonText: "Tijdelijk niet beschikbaar",
+      buttonUrl: "javascript:void(0)"
+    },
+    {
+      id: "appstore",
+      title: "NCS App Store",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-download", title: "Apps downloaden", description: "Ontdek en download handige apps en tools speciaal voor jou." },
+        { icon: "fas fa-star", title: "Populaire apps", description: "Bekijk de meest gedownloade en best gewaardeerde apps." }
+      ],
+      buttonText: "Open NCS App Store",
+      buttonUrl: "https://ncs-app-store.web.app/"
+    },
+    {
+      id: "smash",
+      title: "Smash Battle",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-bolt", title: "Actie", description: "Ervaar snelle actie en spannende gevechten in Smash Battle!" },
+        { icon: "fas fa-users", title: "Multiplayer", description: "Speel samen met vrienden en word de ultieme kampioen." }
+      ],
+      buttonText: "Ga naar Smash Battle",
+      buttonUrl: "https://sn2023.wixsite.com/smash-battle"
+    },
+        {
+      id: "Project hub",
+      title: "Project hub",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-bolt", title: "Projecten", description: "Zet snel je site online met NAIM Ai." },
+        { icon: "fas fa-users", title: "Multiplayer", description: "Laat NAIM AI een site voor je maken." }
+      ],
+      buttonText: "Ga naar Project hub",
+      buttonUrl: "https://naim-cloud-software.netlify.app"
+    },
+            
+    {
+      id: "Credits",
+      title: "Credits",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-bolt", title: "sites", description: "Laat je eigen sites maken." },
+        { icon: "fas fa-users", title: "logos", description: "Laat logos maken." }
+      ],
+      buttonText: "Ga naar Credits",
+      buttonUrl: "https://ncs-credits.web.app"
+    },
+        
+    {
+      id: "naimit",
+      title: "naimit",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-bolt", title: "quiz", description: "host je eigen blooket achtig quiz." },
+        { icon: "fas fa-users", title: "crypto hack", description: "hack mensen en steel crypto" }
+      ],
+      buttonText: "Ga naar naimit",
+      buttonUrl: "https://naimit-ncs.web.app"
+    },
+    {
+      id: "finlog",
+      title: "FinLog",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-wallet", title: "Financieel Overzicht", description: "Beheer je financiën en krijg inzicht in je budget." },
+        { icon: "fas fa-file-invoice-dollar", title: "Logging", description: "Log je transacties eenvoudig en snel op één plek." }
+      ],
+      buttonText: "Ga naar FinLog",
+      buttonUrl: "https://finlog-ncs.netlify.app/"
+    },
+    {
+      id: "toptiming",
+      title: "Top Timing!",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-clock", title: "Wekker & Timer", description: "Beheer je tijd met geavanceerde alarmen en een nauwkeurige countdown timer." },
+        { icon: "fas fa-stopwatch", title: "Stopwatch & Wereldtijd", description: "Meet rondetijden en bekijk actuele tijden in wereldsteden zoals Tokio en New York." }
+      ],
+      buttonText: "Ga naar Top Timing!",
+      buttonUrl: "https://top-timing.netlify.app/"
+    },
+    {
+      id: "typmaster",
+      title: "NCS TypMaster",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-keyboard", title: "Typvaardigheid", description: "Test en verbeter je typsnelheid en nauwkeurigheid met interactieve oefeningen." },
+        { icon: "fas fa-tachometer-alt", title: "WPM Tracker", description: "Houd je woorden per minuut bij en zie hoe je vooruitgaat." }
+      ],
+      buttonText: "Ga naar TypMaster",
+      buttonUrl: "https://ncs-typmaster.netlify.app/"
+    },
+    {
+      id: "learnhub",
+      title: "NCS LearnHub Pro",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-user-graduate", title: "Leeromgeving", description: "Toegang tot al je educatieve tools op één centrale plek." },
+        { icon: "fas fa-lock", title: "Beveiligd", description: "Log veilig in met je eigen PIN-code en beheer je eigen sites." }
+      ],
+      buttonText: "Ga naar LearnHub",
+      buttonUrl: "https://leerplatvorm-ncs.netlify.app/"
+    },
+    {
+      id: "voxeltoybox",
+      title: "NCS Voxel Toybox",
+      type: "normal",
+      cards: [
+        { icon: "fas fa-cube", title: "3D Creatie", description: "Bouw je eigen werelden met kleurrijke voxels in deze interactieve editor." },
+        { icon: "fas fa-lightbulb", title: "Creativiteit", description: "Laat je fantasie de vrije loop en maak unieke 3D-modellen." }
+      ],
+      buttonText: "Ga naar Voxel Toybox",
+      buttonUrl: "https://ncs-voxeltoybox.netlify.app/"
+    },
+  ];
+
+  // Genereer secties dynamisch
+  function generateSections() {
+    const container = document.getElementById("sections-container");
+    
+    sectionsData.forEach(section => {
+      const sectionElement = document.createElement("section");
+      sectionElement.id = section.id;
+      
+      // Titel
+      const title = document.createElement("h3");
+      title.textContent = section.title;
+      sectionElement.appendChild(title);
+      
+      // Cards container
+      const cardsDiv = document.createElement("div");
+      cardsDiv.className = "cards";
+      
+      // Genereer cards
+      section.cards.forEach(card => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card";
+        cardDiv.innerHTML = `
+          <i class="${card.icon}"></i>
+          <h4>${card.title}</h4>
+          <p>${card.description}</p>
+        `;
+        cardsDiv.appendChild(cardDiv);
+      });
+      
+      sectionElement.appendChild(cardsDiv);
+      
+      // Button
+      const button = document.createElement("a");
+      button.href = section.buttonUrl;
+      if (!section.disabled) {
+        button.target = "_blank";
+      }
+      button.className = "section-btn" + (section.disabled ? " disabled" : "");
+      button.textContent = section.buttonText;
+      sectionElement.appendChild(button);
+      
+      container.appendChild(sectionElement);
+    });
+  }
+
+  // Genereer navigatie dynamisch
+  function generateNavigation() {
+    const navUl = document.querySelector("nav ul");
+    navUl.innerHTML = "";
+
+    // Home link
+    const homeLi = document.createElement("li");
+    const homeLink = document.createElement("a");
+    homeLink.href = "#";
+    homeLink.textContent = "Home";
+    homeLink.onclick = (e) => {
+      if (window.scrollY < 100) {
+        e.preventDefault();
+        naimSpeak("U bevindt zich reeds op de hoofdpagina. Is er iets specifieks waar ik u mee kan helpen?");
+      }
+      // Stop movement when home is clicked and Naim speaks
+      stopNaimMovement();
+    };
+    homeLi.appendChild(homeLink);
+    navUl.appendChild(homeLi);
+
+    // Dropdown voor Projecten
+    const dropdownLi = document.createElement("li");
+    dropdownLi.className = "dropdown";
+    dropdownLi.innerHTML = `
+      <a href="javascript:void(0)" class="dropbtn">Projecten <i class="fas fa-caret-down"></i></a>
+      <ul class="dropdown-content"></ul>
+    `;
+    const dropdownContent = dropdownLi.querySelector(".dropdown-content");
+    
+    sectionsData.forEach(section => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `#${section.id}`;
+      a.textContent = section.title;
+      li.appendChild(a);
+      dropdownContent.appendChild(li);
+    });
+    
+    navUl.appendChild(dropdownLi);
+
+    // Voeg FAQ en Over toe
+    ["FAQ", "Over"].forEach((text) => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `#${text.toLowerCase()}`;
+      a.textContent = text;
+      li.appendChild(a);
+      navUl.appendChild(li);
+    });
+  }
+
+  // Initialiseer de pagina
+  window.addEventListener("DOMContentLoaded", () => {
+    generateSections();
+    generateNavigation();
+  });
+
+  // Naim Bot Logica
+  // Bijgewerkte Naim berichten, formeler en vriendelijker
+  const naimMessages = {
+    "initial": "Goedendag! Ik ben Naim, uw digitale assistent. Hoe kan ik u van dienst zijn?",
+    "welcome_back": "Welkom terug! Ik ben hier om u te begeleiden.",
+    "learn": "In de Code Editor kunt u direct experimenteren met HTML en CSS. Een uitstekende plek om uw programmeervaardigheden te ontwikkelen!",
+    "lesrooster": "Hier kunt u uw persoonlijke lesrooster en eventuele wijzigingen inzien. Zo bent u altijd goed voorbereid.",
+    "cloud": "De NCS Cloud biedt een veilige omgeving om al uw bestanden op te slaan en te delen. Efficiënt en betrouwbaar.",
+    "media": "Ontdek bij SN Media een collectie van onze nieuwste video's en unieke foto's. Visuele inspiratie gegarandeerd.",
+    "gaming": "Voor de liefhebbers van actie en avontuur: SN Gaming biedt diverse leuke spellen en spannende challenges.",
+    "chatconnect": "Maak nieuwe connecties en deel uw ideeën in de actieve ChatConnect community. Samenwerken en communiceren was nog nooit zo eenvoudig.",
+    "naim": "De NAIM AI-assistent is momenteel niet beschikbaar. De site is in de updating en komt op een later moment weer online.",
+    "appstore": "In de NCS App Store vindt u een selectie van handige applicaties en tools die uw dagelijkse taken vergemakkelijken.",
+    "smash": "Bereid u voor op intense gevechten en word de ultieme kampioen in Smash Battle!",
+    "finlog": "Met FinLog houdt u eenvoudig uw financiën bij en krijgt u inzicht in uw budget. Overzichtelijk en praktisch.",
+    "toptiming": "Top Timing helpt u uw tijd efficiënt te beheren met geavanceerde wekkers, timers en wereldtijden.",
+    "typmaster": "Verbeter uw typsnelheid en nauwkeurigheid met de interactieve oefeningen van NCS TypMaster.",
+    "learnhub": "NCS LearnHub Pro is uw centrale toegangspunt tot al uw educatieve hulpmiddelen, veilig en georganiseerd.",
+    "voxeltoybox": "Laat uw creativiteit de vrije loop en bouw unieke 3D-modellen met kleurrijke voxels in NCS Voxel Toybox.",
+    "faq": "Heeft u vragen? Hier vindt u antwoorden op de meest gestelde vragen over NCS.",
+    "over": "Leuk dat u meer wilt weten over de visie en het ontstaan van NCS. Wij vertellen u er graag meer over.",
+    "general_tip_1": "Wist u dat NCS een breed scala aan tools biedt voor zowel leren als ontspanning? Neem gerust een kijkje!",
+    "general_tip_2": "Vergeet niet de donkere modus te proberen voor een comfortabelere kijkervaring in de avonduren.",
+    "general_tip_3": "Gebruik de zoekbalk om snel te vinden wat u zoekt op de website.",
+    "general_tip_4": "Heeft u suggesties voor nieuwe functies? Wij horen het graag!"
+  };
+
+  let naimTimeout;
+  let lastSpokenSection = "";
+  const SECTION_SPEAK_DELAY = 1000; // 1 second delay before Naim speaks about a section
+  const GENERAL_SPEAK_INTERVAL = 30000; // Speak a general tip every 30 seconds if idle
+  let sectionSpeakTimeout; // To clear timeout if user scrolls quickly
+  let naimMovementInterval; // To control general messages
+
+  function naimSpeak(text, duration = 5000) {
+    const bot = document.getElementById("naim-bot");
+    const bubble = document.getElementById("naim-bubble");
+    bubble.textContent = text;
+    bot.classList.add("active");
+    bot.classList.remove("moving"); // Stop movement when speaking
+    bot.classList.add("speaking");
+
+    clearTimeout(naimTimeout); // Clear any previous speak timeout
+    naimTimeout = setTimeout(() => {
+      bot.classList.remove("active");
+      bot.classList.remove("speaking");
+      startNaimMovement(); // Resume movement after speaking
+    }, duration);
+  }
+
+  function startNaimMovement() {
+    const bot = document.getElementById("naim-bot");
+    if (!bot.classList.contains("speaking")) { // Only move if not speaking
+      bot.classList.add("moving");
+    }
+    // Start general message interval if not already running
+    if (!naimMovementInterval) {
+      naimMovementInterval = setInterval(showGeneralNaimMessage, GENERAL_SPEAK_INTERVAL);
+    }
+  }
+
+  function stopNaimMovement() {
+    const bot = document.getElementById("naim-bot");
+    bot.classList.remove("moving");
+    clearInterval(naimMovementInterval); // Stop general message interval
+    naimMovementInterval = null;
+  }
+
+  let generalTipIndex = 0;
+  const generalTips = [
+    "general_tip_1", "general_tip_2", "general_tip_3", "general_tip_4"
+  ];
+
+  function showGeneralNaimMessage() {
+    // Only speak if Naim is not currently active (speaking)
+    if (!document.getElementById("naim-bot").classList.contains("active")) {
+      const tipKey = generalTips[generalTipIndex % generalTips.length];
+      naimSpeak(naimMessages[tipKey]);
+      generalTipIndex++;
+    }
+  }
+
+  // Loader
+  window.addEventListener("load", () => { document.getElementById("loader").style.display = "none"; });
+
+  // Dark mode
+  document.getElementById("darkToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); });
+
+  // Mobile menu
+  document.querySelector(".menu-toggle").addEventListener("click", () => { document.querySelector("nav").classList.toggle("active"); });
+
+  // Scroll progress & toTop
+  window.onscroll = () => {
+    let scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById("progress").style.width = scrolled + "%";
+    document.getElementById("toTop").style.display = window.scrollY > 300 ? "block" : "none";
+
+    // Active nav link
+    document.querySelectorAll("section").forEach(sec => {
+      const top = sec.offsetTop - 100;
+      const bottom = top + sec.offsetHeight;
+      const id = sec.getAttribute("id");
+      const link = document.querySelector(`nav ul li a[href="#${id}"]`);
+      if(link) {
+        if(window.scrollY >= top && window.scrollY < bottom) { 
+          link.classList.add("active"); 
+          // Laat Naim iets vertellen over de sectie
+          if (lastSpokenSection !== id && naimMessages[id]) {
+            lastSpokenSection = id;
+            naimSpeak(naimMessages[id]);
+          }
+        }
+        else { link.classList.remove("active"); }
+      }
+    });
+  };
+
+  // Scroll-to-top action
+  document.getElementById("toTop").addEventListener("click", () => { window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  // FAQ toggle
+  document.querySelectorAll(".faq-item").forEach(item => {
+    item.addEventListener("click", () => {
+      let p = item.querySelector("p");
+      p.style.display = p.style.display === "block" ? "none" : "block";
+    });
+  });
+
+  // Search function
+  document.getElementById("searchBar").addEventListener("input", e => {
+    let query = e.target.value.toLowerCase();
+    document.querySelectorAll("section").forEach(sec => {
+      sec.style.display = sec.innerText.toLowerCase().includes(query) ? "block" : "none";
+    });
+  });
+
+  // Initialiseer de pagina en start Naim na een vertraging
+  window.addEventListener("DOMContentLoaded", () => {
+    generateSections();
+    generateNavigation();
+
+    // Initial Naim message after a delay
+    setTimeout(() => {
+      naimSpeak(naimMessages.initial);
+      startNaimMovement(); // Start moving after initial message
+    }, 3000); // 3 seconds delay for initial message
+  });
+
+  // FAQ toggle (bestaande functionaliteit)
+  document.querySelectorAll(".faq-item").forEach(item => {
+    item.addEventListener("click", () => {
+      let p = item.querySelector("p");
+      p.style.display = p.style.display === "block" ? "none" : "block";
+    });
+  });
+</script>
+</body>
+</html>
